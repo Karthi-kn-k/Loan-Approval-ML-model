@@ -1,10 +1,11 @@
 import streamlit as st
+import matplotlib.pyplot as plt
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+
 from scripts.preprocess import load_and_preprocess_data
 from scripts.train import train_decision_tree
 from scripts.prediction import predict_new_customer
 from scripts.visualization import plot_top3_tree
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix, ConfusionMatrixDisplay
-import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Loan Approval Prediction", layout="wide")
 
@@ -16,9 +17,10 @@ X, y = load_and_preprocess_data("data/ProcessedLoan.csv")
 clf, x_train, x_test, y_train, y_test = train_decision_tree(X, y)
 
 # 2. Show dataset before graph
-st.subheader("📂 Processed Training Data ")
+st.subheader("📂 Processed Training Data")
 st.dataframe(X.assign(Loan_Status=y))
 
+# 3. Model Performance Metrics
 st.subheader("📊 Model Performance Metrics")
 y_pred = clf.predict(x_test)
 acc = accuracy_score(y_test, y_pred)
@@ -26,15 +28,13 @@ prec = precision_score(y_test, y_pred, zero_division=0)
 rec = recall_score(y_test, y_pred)
 f1 = f1_score(y_test, y_pred)
 
-col2, col3, col4 = st.columns(3)
-st.subheader("Metrices")
-st.success(f"✅ Accuracy : {acc*100}%")
-# col2.metric("🎯 Precision", f"{prec:.2f}")
-# col3.metric("🔁 Recall", f"{rec:.2f}")
-# col4.metric("📌 F1 Score", f"{f1:.2f}")
+col1, col2, col3, col4 = st.columns(4)
+col1.metric("✅ Accuracy", f"{acc*100:.2f}%")
+col2.metric("🎯 Precision", f"{prec:.2f}")
+col3.metric("🔁 Recall", f"{rec:.2f}")
+col4.metric("📌 F1 Score", f"{f1:.2f}")
 
-
-# 3. Sidebar: Customer input
+# 4. Sidebar input
 st.sidebar.header("🔍 Enter Customer Details")
 customer_input = {
     'Gender': st.sidebar.selectbox("Gender", ["Male", "Female"]),
@@ -50,14 +50,17 @@ customer_input = {
     'Property_Area': st.sidebar.selectbox("Property Area", ["Urban", "Rural", "Semiurban"])
 }
 
-# 4. Predict loan approval
+# 5. Predict loan approval
 if st.sidebar.button("Predict Loan Approval"):
-    prediction = predict_new_customer(clf, customer_input, X.columns)
+    prediction, input_encoded = predict_new_customer(clf, customer_input, X.columns)
     result = "✅ Loan Approved" if prediction == 1 else "❌ Loan Not Approved"
     st.subheader("📌 Prediction Result")
     st.success(result)
 
-# 5. Visualize decision tree
-st.subheader("📊 Top 3 Levels of the Decision Tree")
+    st.subheader("🧾 Input Features Sent to Model")
+    st.write(input_encoded)
+
+# 6. Visualize decision tree
+st.subheader("🌳 Top 3 Levels of the Decision Tree")
 fig = plot_top3_tree(clf, X.columns)
 st.pyplot(fig)
