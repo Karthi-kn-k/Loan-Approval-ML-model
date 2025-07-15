@@ -15,6 +15,11 @@ The dataset has been preprocessed and cleaned before training.
 
 ---
 
+## 🔗 Live Demo
+
+👉 View the Deployed App -->  ("https://loan-approval-ml-model-karthikn.streamlit.app/")
+
+---
 ## 📌 Features Used for Prediction
 
 The model uses the following features to predict loan approval:
